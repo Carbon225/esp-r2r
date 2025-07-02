@@ -11,36 +11,13 @@
 #include "soc/gpio_reg.h"
 #include "spinlock.h"
 
-#define CLOCK_GPIO 14
-#define NUM_BITS 5
-#define FIRST_GPIO 15
+// #define CLOCK_GPIO 14
+#define LEFT_GPIO 15
+#define RIGHT_GPIO 16
 #define SAMPLE_RATE_HZ 50000
-#define OVERSAMPLING 40
+#define OVERSAMPLING 64
 
-#define RESOLUTION (1 << NUM_BITS)
-#define MAX_VALUE (RESOLUTION - 1)
-#define LEVEL_INVERT (1.0f / ((float)MAX_VALUE))
-
-static IRAM_ATTR float sigma_next_sample(float input_signal)
-{
-    static float integrator1 = 0.0f;
-    static float integrator2 = 0.0f;
-    static float integrator3 = 0.0f;
-    static float feedback = 0.0f;
-
-    integrator1 += input_signal - feedback;
-    integrator2 += integrator1 - feedback;
-    integrator3 += integrator2 - feedback;
-
-    float quantizer = integrator3 * MAX_VALUE;
-    quantizer = (float)((int)(quantizer + 0.5f)) * LEVEL_INVERT;
-
-    feedback = quantizer;
-
-    return quantizer;
-}
-
-#include "sigma.h"
+#include "sigma_stereo.h"
 
 static void sample_generator_task(void *pvParameter)
 {
