@@ -76,9 +76,9 @@
 #define _SIGMA_SAMPLE_PERIOD_US (1000000 / SAMPLE_RATE_HZ)
 #define _SIGMA_MICROSAMPLE_PERIOD_CYCLES (_SIGMA_CPU_FREQ / (SAMPLE_RATE_HZ * OVERSAMPLING))
 
-static volatile float __attribute__((aligned(4))) _sigma_buffer[256] = {0};
-static volatile uint8_t __attribute__((aligned(4))) _sigma_buffer_read = 0;
-static volatile uint8_t __attribute__((aligned(4))) _sigma_buffer_write = 0;
+static volatile DRAM_ATTR float __attribute__((aligned(4))) _sigma_buffer[256] = {0};
+static volatile DRAM_ATTR uint8_t __attribute__((aligned(4))) _sigma_buffer_read = 0;
+static volatile DRAM_ATTR uint8_t __attribute__((aligned(4))) _sigma_buffer_write = 0;
 
 static volatile uint32_t *const _sigma_gpio_out_reg = (uint32_t *)GPIO_OUT_REG;
 static volatile uint32_t *const _sigma_gpio_out_w1ts_reg = (uint32_t *)GPIO_OUT_W1TS_REG;
@@ -139,7 +139,11 @@ static IRAM_ATTR void sigma_write(float sample)
 static void sigma_init(void)
 {
     gpio_config_t io_conf = {
+#ifdef CLOCK_GPIO
+        .pin_bit_mask = _SIGMA_GPIO_MASK | (1 << CLOCK_GPIO),
+#else
         .pin_bit_mask = _SIGMA_GPIO_MASK,
+#endif
         .mode = GPIO_MODE_OUTPUT,
         .pull_up_en = GPIO_PULLUP_DISABLE,
         .pull_down_en = GPIO_PULLDOWN_DISABLE,
